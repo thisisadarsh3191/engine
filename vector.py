@@ -39,6 +39,12 @@ class vector:
         """
         return vector(self.x * scalar, self.y * scalar)
     
+    def __rmul__(self,scalar:float)->'vector':
+        """
+        Uniformly scales both spatial components by a real scalar number factor (scalar × vector).
+        """
+        return vector(self.x * scalar, self.y * scalar)
+    
 
     def magSq(self) -> float:
         """

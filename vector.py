@@ -62,8 +62,8 @@ class vector:
         return vector(self.x / mag, self.y / mag) if mag != 0.0 else vector(1.0)
     
 
-    def dot(self,v2:'vector')->'vector':
+    def dot(self,v2:'vector')->float:
         """
         Calculates the algebraic dot product projection: self.x * other.x + self.y * other.y
         """
-        return vector(self.x * v2.x + self.y * v2.y)
+        return (self.x * v2.x + self.y * v2.y)

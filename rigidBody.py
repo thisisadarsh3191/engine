@@ -5,7 +5,8 @@ class rigidBody:
                     centerY:float = 0.0, 
                     radius:float = 1.0,
                     mass:float = 1.0,
-                    e:float = 1.0
+                    e:float = 1.0,
+                    color:tuple = (255,255,255)
             ):
         self.mass = mass
         self.position = vector(float(centerX),float(centerY))
@@ -15,6 +16,7 @@ class rigidBody:
         self.inverseMass = 1.0/mass if mass != 0.0 else 0.0
         self.netForce = vector()
         self.e = e
+        self.color = color
         
         
     

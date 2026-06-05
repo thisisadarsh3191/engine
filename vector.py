@@ -45,6 +45,15 @@ class vector:
         """
         return vector(self.x * scalar, self.y * scalar)
     
+    def __truediv__(self, scalar:float):
+
+        """
+        Dividing a vector by a scalar value: float
+        """
+        if scalar == 0.0:
+            raise ZeroDivisionError("Cannot divide a vector by zero")
+        return vector(self.x / scalar,self.y / scalar)
+    
 
     def magSq(self) -> float:
         """

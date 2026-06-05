@@ -29,7 +29,7 @@ class vector:
         """
         Evaluates a component-wise algebraic vector subtraction (self - other).
         """
-        return vector(self.x+v2.x,self.y+v2.y)
+        return vector(self.x-v2.x,self.y-v2.y)
     
 
     

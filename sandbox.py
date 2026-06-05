@@ -7,6 +7,8 @@ import collision as c
 white=(255,255,255)
 black = (0,0,0)
 gray = (128,128,128)
+red = (255,0,0)
+green = (0,255,0)
 
 res = (800,600)
 pygame.init()
@@ -22,13 +24,13 @@ def create(body:r.rigidBody):
         screen,
         int(body.position.x),
         int(body.position.y),
-        int(body.radius),black
+        int(body.radius),body.color
     )
     gfx.filled_circle(
         screen,
         int(body.position.x),
         int(body.position.y),
-        int(body.radius),black
+        int(body.radius),body.color
     )
 
     # if circleY+radius >= 600 and velocity>0:
@@ -39,9 +41,27 @@ def create(body:r.rigidBody):
 
 
 
-ball = r.rigidBody(300,400,10,10,0.9)
-ball.velocity = vector(10)
-gravity = vector(0,200)
+ballA = r.rigidBody(300,300,10,10)
+ballA.velocity = vector(10)
+
+ballB = r.rigidBody(400,300,10,20,color=red)
+ballB.velocity = vector(-15)
+
+ballC = r.rigidBody(500,300,25,100,color=green)
+
+# gravity = vector(0,200)
+particles = [ballA,ballB,ballC]
+
+def objectRun(body:r.rigidBody):
+    #Adding forces
+    # body.addForce(gravity)
+    body.integrate(dt)
+
+    #collision
+    c.wallCollisionX(body,res)
+    c.wallCollisionY(body,res)
+    
+
 
 "Game loop"
 run = True
@@ -49,18 +69,22 @@ while run:
     for eve in pygame.event.get():
         if eve.type == pygame.QUIT:
             run = False
+
+    for p in particles:
+        objectRun(p)
+
+    for i in range(0,len(particles)):
+        for j in range(i+1,len(particles)):
+            c.particleResolution(particles[i],particles[j])
+            c.particleCollision(particles[i],particles[j])
     
-    #Adding forces
-    ball.addForce(gravity)
-    ball.integrate(dt)
-
-    #collision
-    c.wallCollisionX(ball,res)
-    c.wallCollisionY(ball,res)
-
+    
     #visual rendering
     screen.fill(gray)
-    create(ball)
+    for p in particles:
+        create(p)
+    
+
     pygame.display.flip()
 
 pygame.quit()

@@ -1,0 +1,125 @@
+
+# 2D Rigid Body Physics Sandbox
+
+A deterministic, object-oriented 2D physics simulation engine built from scratch in Python. Designed as a foundational engineering sandbox, this project avoids high-level physics libraries (like Box2D or Pymunk) to explore how classical mechanics equations are translated into discrete, frame-by-frame computer algorithms. 
+
+Rather than relying on algebraic shortcuts that fall short in multi-body environments, the engine models interactions dynamically using impulse-based momentum changes and inverse-mass positional resolutions. The entire system is built with strict modularity, cleanly separating rendering from the core physics execution phases.
+
+
+The entire work/algorithm of this engine can be broken down into 5 steps:
+1. **Force Accumulation:** Gathers all forces acting on a body and stores it as a property of the rigidBody object.
+2. **Numerical Integration:** Evaluates net parameters using **Semi-Implicit Euler integration**. 
+   $$\mathbf{v}_{t + \Delta t} = \mathbf{v}_t + \left(\mathbf{F}_{\text{net}} \cdot m_{\text{inv}}\right) \cdot \Delta t$$
+   $$\mathbf{x}_{t + \Delta t} = \mathbf{x}_t + \mathbf{v}_{t + \Delta t} \cdot \Delta t$$
+
+   I've used this as I came across this as the most efficient way to resolve positions and velocities in game physics. 
+3. **Broad-Phase Collision Detection:** Essentially eliminates pairs of particles which are far from each other and uses resources only on those which touch or have fused into each other in that time instant
+4. **Narrow-Phase Collision Detection:** The particle duos which were not eliminated in broad-phase collision detection is now undergone a resolution to make sure the bodies don't pass through each other.
+If they do, they are retraced such that they are flush against each other. The displacement of each particle is dependent on their inverse mass (or in other words, heavier masses move less, lighter masses move more)
+
+If a bowling ball collides with a ping pong ball, in this engine, it is not probable that in a particular time instant the balls will be touching each other. They will most probably have gone through each other by a certain amount (let's call this **penetration**). Now for sure, Newton's third law applies here. The bowling ball and ping pong would exert equal force on each other
+
+But since the ping pong ball has lesser mass, it moves more distance away from the bowling ball easily. Let's call this property **movability**. 
+
+Since movability inversely relates to mass, we move the ping pong ball more and bowling ball less and make them sit flush against each other
+
+5. **Impulse/Positional Resolution:** 
+*Built using the curriculum and guidelines from the [Newcastle University Game Technologies Module](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/moduleinformationgametechnologies/).*
+
+Essentially after Narrow Phase Collision Detection, bodies need to be given velocities. My initial code heavily depended on two particular formulae:
+   - Law of conservation of momentum
+   $$m_1 \mathbf{v}_{1i} + m_2 \mathbf{v}_{2i} = m_1 \mathbf{v}_{1f} + m_2 \mathbf{v}_{2f}$$
+
+   - Coefficient of restitution
+   $$e = -\frac{\mathbf{v}_{1f} - \mathbf{v}_{2f}}{\mathbf{v}_{1i} - \mathbf{v}_{2i}}$$
+
+   Using this and the given values of initial velocities and masses, we get 
+   $$v_1 = \frac{(m_1 - e m_2) u_1 + (1+e) m_2 u_2}{m_1+m_2}$$
+   $$v_2 = \frac{m_1 u_1 (1+e) + u_2 (m_2 - m_1 e)}{m_1+m_2} $$
+where e is coefficient of restitution
+
+However using this formulae and logic had many fallacies:
+ - **Infinite mass singularity:** It does not handle objects with infinite mass (like a wall) very well, since the formula doesn't support that
+ -**State Overwriting:** The particles are constantly reacting with external forces, this formula handles two objects in vacuum very well, but not so in this environment. It kept injecting fake energy, causing the objects to explode across the screens.
+
+ The newer, more efficient and logical method was using impulses:
+ - An impulse is an instantaneous change in momentum
+ $$\mathbf{J} = \Delta \mathbf{p} = m\Delta \mathbf{v}$$
+ -$\hat{\mathbf{n}}$ is determined. It is the unit vector along the common normal
+ -Impulse of equal magnitude is applied on both objects.
+
+ $$\mathbf{v}_A' = \mathbf{v}_A + \frac{j}{m_A}\hat{\mathbf{n}}$$
+ $$\mathbf{v}_B' = \mathbf{v}_B - \frac{j}{m_B}\hat{\mathbf{n}}$$
+
+ Or can be rewritten as
+   $$\mathbf{v}_A' = \mathbf{v}_A + j w_A \hat{\mathbf{n}}$$
+   $$\mathbf{v}_B' = \mathbf{v}_B - j w_B \hat{\mathbf{n}}$$
+
+   where $$w = \frac{1}{m}$$
+
+ -Also using Newton's law of restitution,
+ $$v_{\text{rel}}' \cdot \hat{\mathbf{n}} = -e (v_{\text{rel}} \cdot \hat{\mathbf{n}})$$
+   We find $j$
+
+   $$j = \frac{-(1 + e)v_{\text{n}}}{w_A + w_B}$$
+
+   Where  $v_{\text{n}} = (\mathbf{v}_A - \mathbf{v}_B) \cdot \hat{\mathbf{n}}$
+   and $v_{\text{n}}' = (\mathbf{v}_A' - \mathbf{v}_B') \cdot \hat{\mathbf{n}}$
+   where $v_{\text{n}}$ = initial relative velocity 
+   and $v_{\text{n}}$ = final relative velocity
+
+   Using this we find, final velocities and collision is successfully simulated
+---
+
+## 🛠️ Module Design Blueprint
+
+The project structure keeps state evaluation and interaction rules meticulously isolated across dedicated system modules:
+
+### 1. `vector.py` (Mathematical Substrate)
+A vector object has two properties- x and y
+It also has overloaded native arithmetic dunder methods (`__add__`, `__sub__`, `__mul__`, `__rmul__`) to abstract raw component tracking away from dynamic physics expressions.
+
+* **Magnitude Guard:** Includes a protective conditional safety check inside the normalization sequence (`.unit()`). If the center distance evaluates to exactly `0.0` (perfect structural overlaps), it manually forces a baseline mock separation unit vector heading of `vector(1.0, 0.0)` to avert a destructive `ZeroDivisionError` crash and supply a distinct axis for pushback resolution.
+
+* **Scalar Commutativity:** Explicitly maps right-side scalar expressions (`__rmul__`) back to standard multiplication routines, safely insulating kinematic update steps regardless of whether step intervals are authored as `velocity * dt` or `dt * velocity`.
+
+### 2. `rigidbody.py` (Kinematic Container)
+Creates a rigidBody object that has the following properties:
+-CenterX - float
+-CenterY- float
+-radius - float
+-mass - float
+-color - (R,G,B) where R,G,B vary from 0 to 255
+* **The Infinite Mass Trick:** Stores mass property definitions as a scalar inverse mass ($m_{\text{inv}} = 1/m$). Dynamic assets retain valid reciprocal decimals, whereas rigid static anchors (e.g., borders, flat floor lines, solid boundary pillars) are initialized with an explicit mass parameter of `0.0`, resulting in a stored inverse mass of exactly `0.0`. This allows the linear state mutation to automatically multiply forces by zero, keeping static elements permanently anchored in coordinate space without introducing convoluted `if/else` branching blocks.
+
+### 3. `collision.py` (Stateless Physics Solver)
+A dedicated, purely stateless module responsible for inspecting spatial boundaries and modifying geometry attributes inline.
+* Contains explicit separation routines for boundary containment (`wallCollisionX`, `wallCollisionY`) and particle-to-particle intersections (`particleCollision`, `particleResolution`).
+
+In upcoming updates, (`wallCollisionX`, `wallCollisionY`) may be replaced by placing infiniteMass object at ends of screen. The goal of this is to avoid redundancy and write intelligent code
+
+---
+
+## ⚠️ Pre-Emptive Operational Safeguards
+
+To prevent chaotic structural bugs unique to discrete physics frameworks, the engine architecture integrates three primary algorithmic guards:
+
+* **The Variable Time Step Catastrophe:** This engine **never** passes dynamic or raw hardware intervals straight into numerical calculations. A temporary frame rate drop spikes $\Delta t$, injecting artificial, exponential kinetic energy into the integration steps, launching elements out of bounds. The engine uses an absolute, rock-solid hardcoded time delta substrate (e.g., `dt = 0.01666` for a uniform $60\text{ Hz}$ update tick).
+* **The Relative Closing Speed Guard:** Impulse calculations are gated behind an impact axis velocity evaluation. If the projection $v_{\text{normal}} \ge 0$, the particles are mathematically confirmed to be already separating or naturally flying apart. The solver returns early to prevent the engine from firing a bounce calculation that would reverse their direction and cause them to stick together like magnets or shake erratically.
+
+
+---
+
+## 📝 Academic Sourcing & Credits
+
+While the structural architecture and object encapsulation are custom configurations designed from the ground up, the underlying linear algebra operations and narrow-phase vector projections utilized within the collision solvers are based on the foundational research paper:
+
+* **Title:** *Game Technologies Tutorial 4 - Collision Detection*
+* **Institution:** Newcastle University (School of Computing Science)
+* **Author/Publisher:** Dr. Rich Davison (Game Technologies Course Archive)
+* **Resource URL:** [Newcastle University Research Repository](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics4collisiondetection/2017%20Tutorial%204%20-%20Collision%20Detection.pdf)
+
+---
+PS: While the README was written by me, the titles of sub-sections and LateX formatting was done by AI. 
+If you find any bugs or want to discuss the physics engine, feel free to open an issue or reach out to me at adarsh.deen@gmail.com
+Thanks for reading this far!

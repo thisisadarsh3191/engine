@@ -10,6 +10,19 @@ gray = (128,128,128)
 red = (255,0,0)
 green = (0,255,0)
 
+
+ballA = r.rigidBody(300,300,10,10)
+ballA.velocity = vector(10)
+
+ballB = r.rigidBody(400,300,10,20,color=red)
+ballB.velocity = vector(-15)
+
+ballC = r.rigidBody(500,300,25,100,color=green)
+
+gravity = vector(0,200)
+particles = [ballA,ballB,ballC]
+e = 0.5
+
 res = (800,600)
 pygame.init()
 # clock = pygame.time.clock()
@@ -41,25 +54,14 @@ def create(body:r.rigidBody):
 
 
 
-ballA = r.rigidBody(300,300,10,10)
-ballA.velocity = vector(10)
-
-ballB = r.rigidBody(400,300,10,20,color=red)
-ballB.velocity = vector(-15)
-
-ballC = r.rigidBody(500,300,25,100,color=green)
-
-# gravity = vector(0,200)
-particles = [ballA,ballB,ballC]
-
 def objectRun(body:r.rigidBody):
     #Adding forces
-    # body.addForce(gravity)
+    body.addForce(gravity)
     body.integrate(dt)
 
     #collision
-    c.wallCollisionX(body,res)
-    c.wallCollisionY(body,res)
+    c.wallCollisionX(body,res,e)
+    c.wallCollisionY(body,res,e)
     
 
 

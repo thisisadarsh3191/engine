@@ -91,6 +91,6 @@ def particleCollision(bodyA:r.rigidBody,bodyB:r.rigidBody,e:float = 1.0):
 
     bodyA.velocity += (impulse*bodyA.inverseMass)*normal
     bodyB.velocity -= (impulse*bodyB.inverseMass)*normal
-
-    # print(f"Body A: {bodyA.velocity}\nBody B:{bodyB.velocity}")
+    print("Collision has occured")
+    print(f"Body A: {bodyA.velocity}\nBody B:{bodyB.velocity}")
 

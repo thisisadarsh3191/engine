@@ -85,8 +85,8 @@ It also has overloaded native arithmetic dunder methods (`__add__`, `__sub__`, `
 
 ### 2. `rigidbody.py` (Kinematic Container)
 Creates a rigidBody object that has the following properties:
--CenterX - float
--CenterY- float
+- CenterX - float
+- CenterY - float
 -radius - float
 -mass - float
 -color - (R,G,B) where R,G,B vary from 0 to 255

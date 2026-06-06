@@ -1,7 +1,7 @@
 
 import rigidBody as r
 
-def wallCollisionY(body:r.rigidBody,res:tuple):
+def wallCollisionY(body:r.rigidBody,res:tuple,e:float = 1.0):
     """Ensures particle stays within given coordinates of y"""
     penYdown = body.position.y + body.radius - res[1]
     penYup = body.radius - body.position.y
@@ -9,15 +9,15 @@ def wallCollisionY(body:r.rigidBody,res:tuple):
     #     body.velocity.y *= -e
     #     body.position.y -= 2*pen
     if penYdown >= 0 and body.velocity.y > 0:
-        body.velocity.y *= -body.e
+        body.velocity.y *= -e
         body.position.y -= penYdown
         return
     elif penYup >= 0 and body.velocity.y <0:
         print(body.velocity)
-        body.velocity.y *= -body.e
+        body.velocity.y *= -e
         body.position.y += penYup
 
-def wallCollisionX(body:r.rigidBody,res:tuple):
+def wallCollisionX(body:r.rigidBody,res:tuple,e:float = 1.0):
     """Ensures particle stays within given coordinates of x"""
     penXleft = body.position.x - body.radius
     penXright = body.position.x+ body.radius - res[0]
@@ -25,12 +25,12 @@ def wallCollisionX(body:r.rigidBody,res:tuple):
     #     body.velocity.y *= -e
     #     body.position.y -= 2*pen
     if penXleft <= 0 and body.velocity.x < 0:
-        body.velocity.x *= -body.e
+        body.velocity.x *= -e
         body.position.x -= penXleft
         return
     elif penXright >= 0 and body.velocity.x >0:
         # print(body.velocity)
-        body.velocity.x *= -body.e
+        body.velocity.x *= -e
         body.position.x -= penXright
 
 

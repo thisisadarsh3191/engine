@@ -71,7 +71,7 @@ However using this formulae and logic had many fallacies:
    Using this we find, final velocities and collision is successfully simulated
 ---
 
-## 🛠️ Module Design Blueprint
+##  Module Design Blueprint
 
 The project structure keeps state evaluation and interaction rules meticulously isolated across dedicated system modules:
 
@@ -100,7 +100,7 @@ In upcoming updates, (`wallCollisionX`, `wallCollisionY`) may be replaced by pla
 
 ---
 
-## ⚠️ Pre-Emptive Operational Safeguards
+##  Pre-Emptive Operational Safeguards
 
 To prevent chaotic structural bugs unique to discrete physics frameworks, the engine architecture integrates three primary algorithmic guards:
 
@@ -110,7 +110,7 @@ To prevent chaotic structural bugs unique to discrete physics frameworks, the en
 
 ---
 
-## 📝 Academic Sourcing & Credits
+##  Academic Sourcing & Credits
 
 While the structural architecture and object encapsulation are custom configurations designed from the ground up, the underlying linear algebra operations and narrow-phase vector projections utilized within the collision solvers are based on the foundational research paper:
 

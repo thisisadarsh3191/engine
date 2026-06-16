@@ -1,4 +1,5 @@
 from vector import vector
+g = vector(0,100)
 class rigidBody:
     def __init__(self,
                     centerX:float = 0.0,
@@ -15,7 +16,7 @@ class rigidBody:
         self.accel = vector()
         self.inverseMass = 1.0/mass if mass != 0.0 else 0.0
         self.netForce = vector()
-        
+        self.gForce = g*mass
         self.color = color
         
         

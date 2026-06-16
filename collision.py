@@ -91,6 +91,37 @@ def particleCollision(bodyA:r.rigidBody,bodyB:r.rigidBody,e:float = 1.0):
 
     bodyA.velocity += (impulse*bodyA.inverseMass)*normal
     bodyB.velocity -= (impulse*bodyB.inverseMass)*normal
-    print("Collision has occured")
-    print(f"Body A: {bodyA.velocity}\nBody B:{bodyB.velocity}")
+
+
+    """Ensures particle stays within given coordinates of x"""
+    
+def wallCollisionXπ(body:r.rigidBody,res:tuple,e:float = 1.0):
+    penXleft = body.position.x - body.radius
+    penXright = body.position.x+ body.radius - res[0]
+    # if pen >= 0 and body.velocity.y > 0:
+    #     body.velocity.y *= -e
+    #     body.position.y -= 2*pen
+    if penXleft <= 0 and body.velocity.x < 0:
+        body.velocity.x *= -e
+        body.position.x -= penXleft
+        return
+
+def particleCollisionπ(bodyA:r.rigidBody,bodyB:r.rigidBody,e:float = 1.0):
+    rSum = bodyA.radius + bodyB.radius
+    sep = bodyA.position - bodyB.position
+
+    if sep.magSq()>rSum**2:
+        return
+    
+    normal = sep.unit()
+    uRel = bodyA.velocity - bodyB.velocity
+    vN = uRel.dot(normal)
+    if vN >= 0:
+        return
+    impulse = (-1*(1+e)*vN)/(bodyA.inverseMass+bodyB.inverseMass)
+
+    bodyA.velocity += (impulse*bodyA.inverseMass)*normal
+    bodyB.velocity -= (impulse*bodyB.inverseMass)*normal
+    
+    
 

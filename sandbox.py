@@ -11,15 +11,13 @@ red = (255,0,0)
 green = (0,255,0)
 
 
-ballA = r.rigidBody(300,590,10,10)
-ballA.velocity = vector(10)
+ballA = r.rigidBody(300,300,10,10)
+ballB = r.rigidBody(400,300,10,1000,color=red)
 
-ballB = r.rigidBody(400,590,10,0,color=red)
-
-
+#give velocities here#############################
 
 
-gravity = vector(0,200)
+##################################################
 particles = [ballA,ballB]
 
 
@@ -54,16 +52,17 @@ def create(body:r.rigidBody):
 
 
 
-def objectRun(body:r.rigidBody):
+def objectRun(body:r.rigidBody,e:float = 1.0):
     #Adding forces
-    body.addForce(gravity)
+    body.addForce(body.gForce)
     body.integrate(dt)
 
     #collision
-    c.wallCollisionX(body,res)
-    c.wallCollisionY(body,res)
+    c.wallCollisionX(body,res,e)
+    c.wallCollisionY(body,res,e)
     
-
+    
+e = 0.8
 
 "Game loop"
 run = True
@@ -73,12 +72,12 @@ while run:
             run = False
 
     for p in particles:
-        objectRun(p)
+        objectRun(p,e)
 
     for i in range(0,len(particles)):
         for j in range(i+1,len(particles)):
             c.particleResolution(particles[i],particles[j])
-            c.particleCollision(particles[i],particles[j])
+            c.particleCollision(particles[i],particles[j],e)
     
     
     #visual rendering
